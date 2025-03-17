@@ -26,12 +26,13 @@ jobs:
 
       - name: Extract Coverage
         run: |
-          COVERED=$(xmllint --xpath "string(//report/counter[@type='LINE']/@covered)" target/site/jacoco/jacoco.xml)
-          MISSED=$(xmllint --xpath "string(//report/counter[@type='LINE']/@missed)" target/site/jacoco/jacoco.xml)
+          COVERED=$(grep -oP 'LINE.*?covered="\K\d+' target/site/jacoco/jacoco.xml)
+          MISSED=$(grep -oP 'LINE.*?missed="\K\d+' target/site/jacoco/jacoco.xml)
           TOTAL=$((COVERED + MISSED))
           PERCENTAGE=$((COVERED * 100 / TOTAL))
           echo "COVERAGE_PERCENTAGE=$PERCENTAGE" >> $GITHUB_ENV
-          echo "Coverage: $PERCENTAGE%"
+          echo "Coverage: $PERCENTAGE%
+          
 
       - name: Post Coverage Comment
         uses: thollander/actions-comment-pull-request@v2
