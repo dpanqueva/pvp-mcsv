@@ -52,7 +52,7 @@ jobs:
           message: |
             📊 **Cobertura de código:** `${{ env.COVERAGE_PERCENTAGE }}%`
             ${{ env.COVERAGE_PERCENTAGE >= 80 && '✅ Cumple con el mínimo requerido.' || '❌ Insuficiente, se requiere al menos 80%.' }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GB_TOKEN }}
 
       - name: Fail if Coverage is Below 80%
         if: ${{ env.COVERAGE_PERCENTAGE < 80 }}
