@@ -1,0 +1,96 @@
+name: CI/CD Workflow
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - master
+    types: [opened, synchronize]
+
+jobs:
+  test-and-coverage:
+    if: github.base_ref == 'develop'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Run Unit Tests with Coverage
+        run: mvn --batch-mode test org.jacoco:jacoco-maven-plugin:prepare-agent verify
+
+      - name: Extract Coverage
+        run: |
+          COVERED=$(xmllint --xpath "string(//report/counter[@type='LINE']/@covered)" target/site/jacoco/jacoco.xml)
+          MISSED=$(xmllint --xpath "string(//report/counter[@type='LINE']/@missed)" target/site/jacoco/jacoco.xml)
+          TOTAL=$((COVERED + MISSED))
+          PERCENTAGE=$((COVERED * 100 / TOTAL))
+          echo "COVERAGE_PERCENTAGE=$PERCENTAGE" >> $GITHUB_ENV
+          echo "Coverage: $PERCENTAGE%"
+
+      - name: Post Coverage Comment
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            📊 **Cobertura de código:** `${{ env.COVERAGE_PERCENTAGE }}%`
+            ${{ env.COVERAGE_PERCENTAGE >= 80 && '✅ Cumple con el mínimo requerido.' || '❌ Insuficiente, se requiere al menos 80%.' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fail if Coverage is Below 80%
+        if: ${{ env.COVERAGE_PERCENTAGE < 80 }}
+        run: exit 1
+
+  build-and-release:
+    if: github.base_ref == 'master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Extract Version
+        id: version
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "Extracted version: ${VERSION}"
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and Push Docker Image
+        run: |
+          DOCKER_IMAGE="your-docker-username/your-repo-name:${{ env.VERSION }}"
+          docker build -t "$DOCKER_IMAGE" .
+          docker push "$DOCKER_IMAGE"
+
+      - name: Create Git Tag
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ env.VERSION }}" -m "Release ${{ env.VERSION }}"
+          git push origin "v${{ env.VERSION }}"
+
+      - name: Update POM Version
+        run: |
+          CURRENT_VERSION="${{ env.VERSION }}"
+          MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
+          NEXT_VERSION="$((MAJOR+1)).0.0-SNAPSHOT"
+          mvn versions:set -DnewVersion=${NEXT_VERSION} -DgenerateBackup=false
+          git commit -am "Update version to ${NEXT_VERSION}"
+          git push origin HEAD
