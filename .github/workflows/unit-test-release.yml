@@ -21,17 +21,45 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Run Unit Tests with Coverage
-        run: mvn --batch-mode test org.jacoco:jacoco-maven-plugin:prepare-agent verify
+      - name: Install xmllint
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
 
-      - name: Extract Coverage
+      - name: Run Tests with JaCoCo
+        run: |
+            export DB_USERNAME=${{ secrets.DB_USERNAME }}
+            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            mvn clean test jacoco:report -Djacoco.includes=** -Djacoco.excludes=com/bcnc/inditex/pvp/mcsv/infrastructure/config/**
+        env:
+            DB_USERNAME: ${{ secrets.DB_USERNAME }}
+            DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
+      - name: Verify Jacoco Report Exists
+        run: |
+          if [ ! -f target/site/jacoco/jacoco.xml ]; then
+            echo "Error: jacoco.xml no encontrado. Asegúrate de que las pruebas se ejecuten correctamente."
+            exit 1
+          fi
+
+      - name: Extract Coverage Percentage
         run: |
           COVERED=$(xmllint --xpath "string(//report/counter[@type='LINE']/@covered)" target/site/jacoco/jacoco.xml)
           MISSED=$(xmllint --xpath "string(//report/counter[@type='LINE']/@missed)" target/site/jacoco/jacoco.xml)
+
+          if [[ -z "$COVERED" || -z "$MISSED" ]]; then
+            echo "Error: No se pudieron obtener valores de cobertura"
+            exit 1
+          fi
+
           TOTAL=$((COVERED + MISSED))
+          if [[ "$TOTAL" -eq 0 ]]; then
+            echo "Error: Total de líneas cubiertas y perdidas es 0"
+            exit 1
+          fi
+
           PERCENTAGE=$((COVERED * 100 / TOTAL))
           echo "COVERAGE_PERCENTAGE=$PERCENTAGE" >> $GITHUB_ENV
-          echo "Coverage: $PERCENTAGE%"
+          echo "📊 **Cobertura de código:** $PERCENTAGE%"
+          
 
       - name: Post Coverage Comment
         uses: thollander/actions-comment-pull-request@v2
@@ -39,15 +67,16 @@ jobs:
           message: |
             📊 **Cobertura de código:** `${{ env.COVERAGE_PERCENTAGE }}%`
             ${{ env.COVERAGE_PERCENTAGE >= 80 && '✅ Cumple con el mínimo requerido.' || '❌ Insuficiente, se requiere al menos 80%.' }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GB_TOKEN }}
 
       - name: Fail if Coverage is Below 80%
         if: ${{ env.COVERAGE_PERCENTAGE < 80 }}
         run: exit 1
 
   build-and-release:
-    if: github.base_ref == 'master'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -60,37 +89,44 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Build with Maven
+        run: |
+          set -e
+          mvn clean package -DskipTests
+          # Verificar que el archivo JAR se haya generado en ./target/
+          ls -al ./target
+
       - name: Extract Version
         id: version
         run: |
+          set -e
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "Extracted version: ${VERSION}"
 
       - name: Login to DockerHub
-        uses: docker/login-action@v2
+        run: |
+          set -e
+          echo "Logging into DockerHub as ${{ secrets.DOCKER_USERNAME }}"
+          echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build and Push Docker
+        uses: docker/build-push-action@v4
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
-
-      - name: Build and Push Docker Image
-        run: |
-          DOCKER_IMAGE="your-docker-username/your-repo-name:${{ env.VERSION }}"
-          docker build -t "$DOCKER_IMAGE" .
-          docker push "$DOCKER_IMAGE"
+          repository: ${{ github.repository }}
+          tag_with_ref: true
+          tag_with_sha: true
+          tags: ${{ github.sha }}
 
       - name: Create Git Tag
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "v${{ env.VERSION }}" -m "Release ${{ env.VERSION }}"
-          git push origin "v${{ env.VERSION }}"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
 
-      - name: Update POM Version
-        run: |
-          CURRENT_VERSION="${{ env.VERSION }}"
-          MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
-          NEXT_VERSION="$((MAJOR+1)).0.0-SNAPSHOT"
-          mvn versions:set -DnewVersion=${NEXT_VERSION} -DgenerateBackup=false
-          git commit -am "Update version to ${NEXT_VERSION}"
-          git push origin HEAD
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.66.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GB_TOKEN }}
+          WITH_V: false
