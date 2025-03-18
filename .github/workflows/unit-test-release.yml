@@ -106,13 +106,22 @@ jobs:
           echo "Logging into DockerHub as ${{ secrets.DOCKER_USERNAME }}"
           echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Build and Push Docker Image
-        run: |
-          set -e
-          DOCKER_IMAGE="${{ secrets.DOCKER_USERNAME }}/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]'):${{ env.VERSION }}"
-          echo "Building Docker image: $DOCKER_IMAGE"
-          docker build -t "$DOCKER_IMAGE" .
-          docker push "$DOCKER_IMAGE"
+#      - name: Build and Push Docker Image
+#        run: |
+#          set -e
+#          DOCKER_IMAGE="${{ secrets.DOCKER_USERNAME }}/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]'):${{ env.VERSION }}"
+#          echo "Building Docker image: $DOCKER_IMAGE"
+#          docker build -t "$DOCKER_IMAGE" .
+#          docker push "$DOCKER_IMAGE"
+      - name: Build and Push Docker
+        uses: docker/build-push-action@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+          repository: ${{ github.repository }}
+          tag_with_ref: true
+          tag_with_sha: true
+          tags: ${{ github.sha }}
 
       - name: Create Git Tag
         run: |
