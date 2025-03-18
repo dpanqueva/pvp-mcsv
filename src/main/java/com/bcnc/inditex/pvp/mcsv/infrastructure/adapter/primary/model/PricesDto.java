@@ -9,13 +9,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PricesDto {
 
-    private Long idPrice;
+    private Long productId;
     private Long brandId;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private String priceList;
-    private Long productId;
-    private Long priority;
     private Float pricePvp;
     private String curr;
 
