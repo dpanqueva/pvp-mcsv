@@ -21,10 +21,10 @@ public class PriceServiceImpl implements PriceService {
     private  final PriceMapper priceMapper;
 
     @Override
-    public PricesDto getPriceByDateAndBrandAndProduct(LocalDateTime applicationDate, Long product, Long brand) {
+    public PricesDto getPriceByDateAndBrandAndProduct(LocalDateTime applicationDate, Long productId, Long brandId) {
 
         Optional<Price> price =
-        priceRepositoryPort.findTopPriceByDateAndBrandAndProduct(applicationDate, product, brand);
+        priceRepositoryPort.findTopPriceByDateAndBrandAndProduct(applicationDate, productId, brandId);
 
         if (price.isEmpty()) {
             throw new NotFoundException("Price not found for request");
