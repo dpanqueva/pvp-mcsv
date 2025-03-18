@@ -75,6 +75,8 @@ jobs:
 
   build-and-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -119,24 +121,12 @@ jobs:
           tags: ${{ github.sha }}
 
       - name: Create Git Tag
-        run: |
-          set -e
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Configurar el token de acceso
-          git config --global url."https://${{ secrets.GB_TOKEN }}@github.com/".insteadOf "https://github.com/"
-          
-          # Crear y push del tag
-          git tag -a "v${{ env.VERSION }}" -m "Release ${{ env.VERSION }}"
-          git push origin "v${{ env.VERSION }}"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
 
-      - name: Update POM Version
-        run: |
-          set -e
-          CURRENT_VERSION="${{ env.VERSION }}"
-          MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
-          NEXT_VERSION="$((MAJOR+1)).0.0-SNAPSHOT"
-          mvn versions:set -DnewVersion=${NEXT_VERSION} -DgenerateBackup=false
-          git commit -am "Update version to ${NEXT_VERSION}"
-          git push origin HEAD
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.66.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GB_TOKEN }}
+          WITH_V: false
