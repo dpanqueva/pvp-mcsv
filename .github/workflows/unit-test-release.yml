@@ -27,29 +27,33 @@ jobs:
 
       - name: Extract Coverage
         run: |
-            COVERAGE=$(grep -oP '(?<=<counter type="INSTRUCTION" missed=")[0-9]+' target/site/jacoco/jacoco.xml)
-            TOTAL=$(grep -oP '(?<=<counter type="INSTRUCTION" covered=")[0-9]+' target/site/jacoco/jacoco.xml)
-            PERCENTAGE=$(echo "scale=2; $TOTAL / ($TOTAL + $COVERAGE) * 100" | bc)
-            echo "Cobertura total: $PERCENTAGE%"
-#        run: |
-#          COVERED=$(grep -oP 'LINE.*?covered="\K\d+' target/site/jacoco/jacoco.xml | tr -d '\n')
-#          MISSED=$(grep -oP 'LINE.*?missed="\K\d+' target/site/jacoco/jacoco.xml | tr -d '\n')
-#
-#          if [[ -z "$COVERED" || -z "$MISSED" ]]; then
-#            echo "Error: No se pudieron obtener valores de cobertura"
-#            exit 1
-#          fi
-#
-#          TOTAL=$((COVERED + MISSED))
-#          if [[ "$TOTAL" -eq 0 ]]; then
-#            echo "Error: Total de líneas cubiertas y perdidas es 0"
-#            exit 1
-#          fi
-#
-#          PERCENTAGE=$((COVERED * 100 / TOTAL))
-#
-#          echo "COVERAGE_PERCENTAGE=$PERCENTAGE" >> $GITHUB_ENV
-#          echo "Coverage: $PERCENTAGE%"
+          # Extraer valores de líneas cubiertas y perdidas del reporte de JaCoCo
+          COVERED=$(grep -oP '(?<=<counter type="LINE" covered=")\d+' target/site/jacoco/jacoco.xml)
+          MISSED=$(grep -oP '(?<=<counter type="LINE" missed=")\d+' target/site/jacoco/jacoco.xml)
+          
+          # Verificar si los valores fueron obtenidos correctamente
+          if [[ -z "$COVERED" || -z "$MISSED" ]]; then
+          echo "Error: No se pudieron obtener valores de cobertura."
+          exit 1
+          fi
+      
+          # Convertir los valores a números enteros
+          COVERED=$(echo "$COVERED" | awk '{s+=$1} END {print s}')
+          MISSED=$(echo "$MISSED" | awk '{s+=$1} END {print s}')
+          
+          # Calcular el total de líneas analizadas
+          TOTAL=$((COVERED + MISSED))
+          
+          if [[ "$TOTAL" -eq 0 ]]; then
+          echo "Error: No hay líneas analizadas en el reporte de cobertura."
+          exit 1
+          fi
+      
+          # Calcular el porcentaje de cobertura con precisión decimal
+          PERCENTAGE=$(awk "BEGIN {printf \"%.2f\", ($COVERED * 100 / $TOTAL)}")
+      
+          echo "COVERAGE_PERCENTAGE=$PERCENTAGE" >> $GITHUB_ENV
+          echo "Cobertura de código: $PERCENTAGE%"
           
 
       - name: Post Coverage Comment
