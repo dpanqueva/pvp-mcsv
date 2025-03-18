@@ -119,9 +119,7 @@
                 <version>0.8.12</version>
                 <configuration>
                     <excludes>
-                        <exclude>**/com/bcnc/inditex/pvp/mscv/infrastructure/config/*</exclude>
-                        <exclude>**/com/bcnc/inditex/pvp/mscv/infrastructure/adapter/primary/model/*</exclude>
-                        <exclude>**/com/bcnc/inditex/pvp/mscv/domain/entity/*</exclude>
+                        <exclude>**/com/bcnc/inditex/pvp/mcsv/infrastructure/config/*</exclude>
                     </excludes>
                 </configuration>
                 <executions>

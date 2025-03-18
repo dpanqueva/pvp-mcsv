@@ -1,14 +1,12 @@
 package com.bcnc.inditex.pvp.mcsv.infrastructure.adapter.primary.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-@Builder(toBuilder = true)
 public class PricesDto {
 
     private Long idPrice;

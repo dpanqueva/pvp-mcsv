@@ -2,6 +2,7 @@ package com.bcnc.inditex.pvp.mcsv;
 
 import com.bcnc.inditex.pvp.mcsv.application.ports.secundary.PriceRepositoryPort;
 import com.bcnc.inditex.pvp.mcsv.domain.exceptions.ExceptionErrorHandler;
+import com.bcnc.inditex.pvp.mcsv.domain.exceptions.NotFoundException;
 import com.bcnc.inditex.pvp.mcsv.infrastructure.adapter.primary.model.PricesDto;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
