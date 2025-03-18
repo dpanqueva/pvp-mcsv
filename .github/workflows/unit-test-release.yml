@@ -74,7 +74,6 @@ jobs:
         run: exit 1
 
   build-and-release:
-    if: github.base_ref == 'master'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -88,17 +87,15 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-
-      - name: Set up Maven
-        uses: actions/setup-maven@v2
-
       - name: Build with Maven
         run: |
-                mvn clean package -DskipTests
+          set -e
+          mvn clean package -DskipTests
 
       - name: Extract Version
         id: version
         run: |
+          set -e
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "Extracted version: ${VERSION}"
@@ -111,12 +108,15 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          DOCKER_IMAGE="{{ secrets.DOCKER_USERNAME }}/{{ github.repository }}:${{ env.VERSION }}"
+          set -e
+          DOCKER_IMAGE="${{ secrets.DOCKER_USERNAME }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ env.VERSION }}"
+          echo "Building Docker image: $DOCKER_IMAGE"
           docker build -t "$DOCKER_IMAGE" .
           docker push "$DOCKER_IMAGE"
 
       - name: Create Git Tag
         run: |
+          set -e
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "v${{ env.VERSION }}" -m "Release ${{ env.VERSION }}"
@@ -124,6 +124,7 @@ jobs:
 
       - name: Update POM Version
         run: |
+          set -e
           CURRENT_VERSION="${{ env.VERSION }}"
           MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
           NEXT_VERSION="$((MAJOR+1)).0.0-SNAPSHOT"
