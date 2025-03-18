@@ -27,8 +27,8 @@ jobs:
 
       - name: Extract Coverage
         run: |
-          COVERED=$(grep -oP 'LINE.*?covered="\K\d+' target/site/jacoco/jacoco.xml | tr -d '\n')
-          MISSED=$(grep -oP 'LINE.*?missed="\K\d+' target/site/jacoco/jacoco.xml | tr -d '\n')
+          COVERED=$(xmllint --xpath 'string(//counter[@type="LINE" and @covered="true"]/@value)' target/site/jacoco/jacoco.xml)
+          MISSED=$(xmllint --xpath 'string(//counter[@type="LINE" and @missed="true"]/@value)' target/site/jacoco/jacoco.xml)
           
           if [[ -z "$COVERED" || -z "$MISSED" ]]; then
           echo "Error: No se pudieron obtener valores de cobertura"
