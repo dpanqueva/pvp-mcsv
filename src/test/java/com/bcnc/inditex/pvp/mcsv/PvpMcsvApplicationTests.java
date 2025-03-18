@@ -3,7 +3,6 @@ package com.bcnc.inditex.pvp.mcsv;
 import com.bcnc.inditex.pvp.mcsv.application.ports.secundary.PriceRepositoryPort;
 import com.bcnc.inditex.pvp.mcsv.domain.exceptions.ExceptionErrorHandler;
 import com.bcnc.inditex.pvp.mcsv.infrastructure.adapter.primary.model.PricesDto;
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -19,8 +18,6 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PvpMcsvApplicationTests {
@@ -39,122 +36,86 @@ class PvpMcsvApplicationTests {
 
 	@Test
 	void testGetPriceH10Day14() {
-		// Configurar los parámetros de entrada
 		LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 14, 10, 0, 0);
 		Long productId = 35455L;
 		Long brandId = 1L;
 
-		// Realizar la llamada HTTP al endpoint del controlador
-		ResponseEntity<PricesDto> response = restTemplate.getForEntity(
-				"http://localhost:" + port + "/api/v1/pvp-prices?applicationDate={applicationDate}&productId={productId}&brandId={brandId}",
-				PricesDto.class,
-				applicationDate,
-				productId,
-				brandId
-		);
+		ResponseEntity<PricesDto> response = getPriceToController(applicationDate,productId,brandId);
 
-		// Verificar el resultado
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertNotNull(response.getBody());
 	}
 
 	@Test
 	void testGetPriceH16Day14() {
-		// Configurar los parámetros de entrada
 		LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 14, 16, 0, 0);
 		Long productId = 35455L;
 		Long brandId = 1L;
 
-		// Realizar la llamada HTTP al endpoint del controlador
-		ResponseEntity<PricesDto> response = restTemplate.getForEntity(
-				"http://localhost:" + port + "/api/v1/pvp-prices?applicationDate={applicationDate}&productId={productId}&brandId={brandId}",
-				PricesDto.class,
-				applicationDate,
-				productId,
-				brandId
-		);
+		ResponseEntity<PricesDto> response = getPriceToController(applicationDate,productId,brandId);
 
-		// Verificar el resultado
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertNotNull(response.getBody());
 	}
 
 	@Test
 	void testGetPriceH21Day14() {
-		// Configurar los parámetros de entrada
 		LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 14, 21, 0, 0);
 		Long productId = 35455L;
 		Long brandId = 1L;
 
-		// Realizar la llamada HTTP al endpoint del controlador
-		ResponseEntity<PricesDto> response = restTemplate.getForEntity(
-				"http://localhost:" + port + "/api/v1/pvp-prices?applicationDate={applicationDate}&productId={productId}&brandId={brandId}",
-				PricesDto.class,
-				applicationDate,
-				productId,
-				brandId
-		);
-		// Verificar el resultado
+		ResponseEntity<PricesDto> response = getPriceToController(applicationDate,productId,brandId);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertNotNull(response.getBody());
 	}
 
 	@Test
 	void testGetPriceH10Day15() {
-		// Configurar los parámetros de entrada
 		LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 15, 10, 0, 0);
 		Long productId = 35455L;
 		Long brandId = 1L;
 
-		// Realizar la llamada HTTP al endpoint del controlador
-		ResponseEntity<PricesDto> response = restTemplate.getForEntity(
-				"http://localhost:" + port + "/api/v1/pvp-prices?applicationDate={applicationDate}&productId={productId}&brandId={brandId}",
-				PricesDto.class,
-				applicationDate,
-				productId,
-				brandId
-		);
-		// Verificar el resultado
+		ResponseEntity<PricesDto> response = getPriceToController(applicationDate,productId,brandId);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertNotNull(response.getBody());
 	}
 
 	@Test
 	void testGetPriceH21Day16() {
-		// Configurar los parámetros de entrada
 		LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 16, 21, 0, 0);
 		Long productId = 35455L;
 		Long brandId = 1L;
 
-		// Realizar la llamada HTTP al endpoint del controlador
-		ResponseEntity<PricesDto> response = restTemplate.getForEntity(
-				"http://localhost:" + port + "/api/v1/pvp-prices?applicationDate={applicationDate}&productId={productId}&brandId={brandId}",
-				PricesDto.class,
-				applicationDate,
-				productId,
-				brandId
-		);
-		// Verificar el resultado
+		ResponseEntity<PricesDto> response = getPriceToController(applicationDate,productId,brandId);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertNotNull(response.getBody());
 	}
 
 	@Test
 	void testGetPriceH22Day13() {
-		// Configurar los parámetros de entrada
 		LocalDateTime applicationDate = LocalDateTime.of(2025, 6, 22, 13, 0, 0);
 		Long productId = 35455L;
 		Long brandId = 1L;
 
-		// Realizar la llamada HTTP al endpoint del controlador
+		ResponseEntity<PricesDto> response = getPriceToController(applicationDate,productId,brandId);
+		assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+	}
+
+	@Test
+	void testGetPriceBadRequest() {
+		LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 14, 10, 0, 0);
+		Long productId = 35455L;
+		Long brandId = 1L;
+
 		ResponseEntity<PricesDto> response = restTemplate.getForEntity(
-				"http://localhost:" + port + "/api/v1/pvp-prices?applicationDate={applicationDate}&productId={productId}&brandId={brandId}",
+				"http://localhost:" + port + "/api/v1/pvp-prices?applicationDate=2025-03-18&productId={productId}&brandId={brandId}",
 				PricesDto.class,
 				applicationDate,
 				productId,
 				brandId
 		);
-		assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 	}
 
 	@Test
@@ -166,5 +127,15 @@ class PvpMcsvApplicationTests {
 
 		Map<String, Object> response = responseEntity.getBody();
 		assertEquals("UPS! Unexpected error, contact system administrator", response.get("Message"));
+	}
+
+	private ResponseEntity<PricesDto> getPriceToController(LocalDateTime applicationDate,Long productId,Long brandId ){
+		return restTemplate.getForEntity(
+				"http://localhost:" + port + "/api/v1/pvp-prices?applicationDate={applicationDate}&productId={productId}&brandId={brandId}",
+				PricesDto.class,
+				applicationDate,
+				productId,
+				brandId
+		);
 	}
 }

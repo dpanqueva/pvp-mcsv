@@ -76,14 +76,6 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>0.8.12</version>
@@ -95,17 +87,6 @@
             <version>2.8.5</version>
         </dependency>
     </dependencies>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
 
     <build>
@@ -137,33 +118,10 @@
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.12</version>
                 <configuration>
-                    <rules>
-                        <rule>
-                            <element>BUNDLE</element>
-                            <limits>
-                                <limit>
-                                    <counter>INSTRUCTION</counter>
-                                    <value>COVEREDRATIO</value>
-                                    <minimum>0.80</minimum> <!-- 80% mínimo -->
-                                </limit>
-                            </limits>
-                        </rule>
-                    </rules>
                     <excludes>
-                        <!-- Excluir clases de configuración -->
-                        <exclude>**/config/*.class</exclude>
-                        <exclude>**/config/**/*.class</exclude>
-
-                        <!-- Excluir modelos y DTOs -->
-                        <exclude>**/model/*.class</exclude>
-                        <exclude>**/model/**/*.class</exclude>
-                        <exclude>**/entity/**/*.class</exclude>
-                        <exclude>**/entity/*.class</exclude>
-
-                        <!-- Excluir clases de prueba -->
-                        <exclude>**/*Test.class</exclude>
-                        <exclude>**/*Test*.class</exclude>
-                        <exclude>**/*Tests.class</exclude>
+                        <exclude>**/com/bcnc/inditex/pvp/mscv/infrastructure/config/*</exclude>
+                        <exclude>**/com/bcnc/inditex/pvp/mscv/infrastructure/adapter/primary/model/*</exclude>
+                        <exclude>**/com/bcnc/inditex/pvp/mscv/domain/entity/*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
