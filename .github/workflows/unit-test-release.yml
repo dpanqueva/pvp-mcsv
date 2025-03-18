@@ -28,6 +28,7 @@ jobs:
         #run: mvn --batch-mode test org.jacoco:jacoco-maven-plugin:prepare-agent verify
         run: mvn clean test jacoco:report
 
+
       - name: Verify Jacoco Report Exists
         run: |
           if [ ! -f target/site/jacoco/jacoco.xml ]; then
