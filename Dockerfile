@@ -5,7 +5,7 @@ FROM eclipse-temurin:21-jdk
 WORKDIR /app
 
 # Copiar el archivo JAR generado por Maven al contenedor
-COPY ./target/*.jar app.jar
+ADD ./target/*.jar app.jar
 
 # Definir las variables de entorno para la base de datos
 ENV DB_USERNAME=${DB_USERNAME}
