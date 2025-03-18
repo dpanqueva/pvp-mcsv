@@ -125,9 +125,15 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "v${{ env.VERSION }}" -m "Release ${{ env.VERSION }}"
           
-          # Usa el token de acceso personal (PAT) para hacer el push
+           # Configurar el repositorio
+          git remote add origin https://github.com/${{ secrets.GB_USERNAME }}/${{ github.repository }}
+    
+          # Configurar la URL de remoto con el token de acceso personal (PAT)
+          git remote set-url origin https://x-access-token:${{ secrets.GB_TOKEN }}@github.com/${{ secrets.GB_USERNAME }}/${{ github.repository }}
+
+          # Hacer el push de la etiqueta
+          git push origin "v${{ env.VERSION }}"
           
-          git push https://x-access-token:${{ secrets.GB_TOKEN }}@github.com/${{ github.repository }} "v${{ env.VERSION }}"
       - name: Update POM Version
         run: |
           set -e
