@@ -88,6 +88,14 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+
+      - name: Set up Maven
+        uses: actions/setup-maven@v2
+
+      - name: Build with Maven
+        run: |
+                mvn clean package -DskipTests
+
       - name: Extract Version
         id: version
         run: |
@@ -103,7 +111,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          DOCKER_IMAGE="your-docker-username/your-repo-name:${{ env.VERSION }}"
+          DOCKER_IMAGE="{{ secrets.DOCKER_USERNAME }}/{{ github.repository }}:${{ env.VERSION }}"
           docker build -t "$DOCKER_IMAGE" .
           docker push "$DOCKER_IMAGE"
 
