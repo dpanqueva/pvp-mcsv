@@ -24,10 +24,14 @@ jobs:
       - name: Install xmllint
         run: sudo apt-get update && sudo apt-get install -y libxml2-utils
 
-      - name: Run Unit Tests with Coverage
-        #run: mvn --batch-mode test org.jacoco:jacoco-maven-plugin:prepare-agent verify
-        run: mvn clean test jacoco:report -Djacoco.includes=** -Djacoco.excludes=com/bcnc/inditex/pvp/mcsv/infrastructure/config/**
-
+      - name: Run Tests with JaCoCo
+        run: |
+            export DB_USERNAME=${{ secrets.DB_USERNAME }}
+            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            mvn clean test jacoco:report -Djacoco.includes=** -Djacoco.excludes=com/bcnc/inditex/pvp/mcsv/infrastructure/config/**
+        env:
+            DB_USERNAME: ${{ secrets.DB_USERNAME }}
+            DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
       - name: Verify Jacoco Report Exists
         run: |

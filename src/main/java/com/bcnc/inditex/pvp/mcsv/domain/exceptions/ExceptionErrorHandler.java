@@ -16,25 +16,26 @@ public class ExceptionErrorHandler {
 
     @ExceptionHandler({MethodArgumentTypeMismatchException.class})
     public ResponseEntity<Map<String, Object>> badRequest(MethodArgumentTypeMismatchException e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("Message", "UPS! Bad request, date must have the format yyyy-mm-ddHH:mm:ss. Example: 2020-06-1410:10:00");
         log.error("Unexpected error: ".concat(e.getMessage()));
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildResponse("UPS! Bad request, date must have the format yyyy-mm-ddHH:mm:ss. Example: 2020-06-1410:10:00"));
     }
 
     @ExceptionHandler({NotFoundException.class})
     public ResponseEntity<Map<String, Object>> notFound(NotFoundException e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("Message", e.getMessage());
         log.error("Not found: ".concat(e.getMessage()));
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(buildResponse(e.getMessage()));
     }
 
     @ExceptionHandler({Exception.class})
     public ResponseEntity<Map<String, Object>> internalServerException(Exception e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("Message", "UPS! Unexpected error, contact system administrator");
         log.error("Unexpected error: ".concat(e.getMessage()));
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(buildResponse("UPS! Unexpected error, contact system administrator"));
+    }
+
+    private Map<String, Object> buildResponse(String message) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("Message", message);
+        return response;
+
     }
 }

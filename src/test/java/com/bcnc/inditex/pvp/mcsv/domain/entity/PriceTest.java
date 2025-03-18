@@ -9,22 +9,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class PriceTest {
 
     @Test
-    void testConstructor() {
-
-        Price price = new Price(1L, 2L, LocalDateTime.now(), LocalDateTime.now(), "priceList", 3L, 1, 5.0f, "EUR");
-
-        assertEquals(1L, price.getIdPrice());
-        assertEquals(2L, price.getBrandId());
-        assertNotNull(price.getStartDate());
-        assertNotNull(price.getEndDate());
-        assertEquals("priceList", price.getPriceList());
-        assertEquals(3L, price.getProductId());
-        assertEquals(1, price.getPriority());
-        assertEquals(5.0f, price.getPricePvp());
-        assertEquals("EUR", price.getCurr());
-    }
-
-    @Test
     void testNoArgsConstructor() {
 
         Price price = new Price();
@@ -41,7 +25,7 @@ class PriceTest {
     }
 
     @Test
-    void testAllArgsConstructor() {
+    void testWithAllParameters() {
 
         Price price = new Price(1L, 2L, LocalDateTime.now(), LocalDateTime.now(), "priceList", 3L, 1, 5.0f, "EUR");
 

@@ -2,9 +2,10 @@ package com.bcnc.inditex.pvp.mcsv;
 
 import com.bcnc.inditex.pvp.mcsv.application.ports.secundary.PriceRepositoryPort;
 import com.bcnc.inditex.pvp.mcsv.domain.exceptions.ExceptionErrorHandler;
-import com.bcnc.inditex.pvp.mcsv.domain.exceptions.NotFoundException;
 import com.bcnc.inditex.pvp.mcsv.infrastructure.adapter.primary.model.PricesDto;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,65 +36,35 @@ class PvpMcsvApplicationTests {
 	@Mock
 	private PriceRepositoryPort priceRepositoryPort;
 
-	@Test
-	void testGetPriceH10Day14() {
-		LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 14, 10, 0, 0);
+	@ParameterizedTest
+	@CsvSource({
+			"2020, 6, 14, 10, 0, 0",
+			"2020, 6, 14, 16, 0, 0",
+			"2020, 6, 14, 21, 0, 0",
+			"2020, 6, 15, 10, 0, 0",
+			"2020, 6, 16, 21, 0, 0",
+	})
+	void testGetPrice(int year, int month, int day, int hour, int minute, int second) {
+		LocalDateTime applicationDate = LocalDateTime.of(
+				year,
+				month,
+				day,
+				hour,
+				minute,
+				second
+		);
 		Long productId = 35455L;
 		Long brandId = 1L;
 
-		ResponseEntity<PricesDto> response = getPriceToController(applicationDate,productId,brandId);
+		ResponseEntity<PricesDto> response = getPriceToController(applicationDate, productId, brandId);
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertNotNull(response.getBody());
 	}
 
-	@Test
-	void testGetPriceH16Day14() {
-		LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 14, 16, 0, 0);
-		Long productId = 35455L;
-		Long brandId = 1L;
-
-		ResponseEntity<PricesDto> response = getPriceToController(applicationDate,productId,brandId);
-
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		assertNotNull(response.getBody());
-	}
 
 	@Test
-	void testGetPriceH21Day14() {
-		LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 14, 21, 0, 0);
-		Long productId = 35455L;
-		Long brandId = 1L;
-
-		ResponseEntity<PricesDto> response = getPriceToController(applicationDate,productId,brandId);
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		assertNotNull(response.getBody());
-	}
-
-	@Test
-	void testGetPriceH10Day15() {
-		LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 15, 10, 0, 0);
-		Long productId = 35455L;
-		Long brandId = 1L;
-
-		ResponseEntity<PricesDto> response = getPriceToController(applicationDate,productId,brandId);
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		assertNotNull(response.getBody());
-	}
-
-	@Test
-	void testGetPriceH21Day16() {
-		LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 16, 21, 0, 0);
-		Long productId = 35455L;
-		Long brandId = 1L;
-
-		ResponseEntity<PricesDto> response = getPriceToController(applicationDate,productId,brandId);
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		assertNotNull(response.getBody());
-	}
-
-	@Test
-	void testGetPriceH22Day13() {
+	void testGetPriceNotFound() {
 		LocalDateTime applicationDate = LocalDateTime.of(2025, 6, 22, 13, 0, 0);
 		Long productId = 35455L;
 		Long brandId = 1L;
