@@ -70,7 +70,8 @@ En mi caso: http://localhost:8080
 ## Documentación de la API
 
 La documentación completa de la API está disponible en:
-[enlace-a-documentacion-api]
+
+[Documentación de la API](https://github.com/dpanqueva/pvp-mcsv/wiki)
 
 ## Notas de Lanzamiento
 
