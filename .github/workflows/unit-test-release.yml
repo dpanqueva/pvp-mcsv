@@ -127,7 +127,7 @@ jobs:
           
           # Usa el token de acceso personal (PAT) para hacer el push
           
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} "v${{ env.VERSION }}"
+          git push https://x-access-token:${{ secrets.GB_TOKEN }}@github.com/${{ github.repository }} "v${{ env.VERSION }}"
       - name: Update POM Version
         run: |
           set -e
