@@ -3,6 +3,8 @@ resilience4j:
     configs:
       my-resilience4j-config:
         sliding-window-size: 6
+        ignoredExceptions:
+          - com.bcnc.inditex.pvp.mcsv.domain.exceptions.NotFoundException
         failure-rate-threshold: 50
         wait-duration-in-open-state: 20s
         permitted-number-of-calls-in-half-open-state: 4

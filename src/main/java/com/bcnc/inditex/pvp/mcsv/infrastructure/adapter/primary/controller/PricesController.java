@@ -1,6 +1,7 @@
 package com.bcnc.inditex.pvp.mcsv.infrastructure.adapter.primary.controller;
 
 import com.bcnc.inditex.pvp.mcsv.application.ports.primary.PriceService;
+import com.bcnc.inditex.pvp.mcsv.domain.exceptions.NotFoundException;
 import com.bcnc.inditex.pvp.mcsv.infrastructure.adapter.primary.model.PricesDto;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +30,7 @@ import java.time.LocalDateTime;
 public class PricesController {
 
     private final PriceService priceService;
-    private final CircuitBreakerFactory breakerFactory;
+    private final CircuitBreakerFactory<?,?> breakerFactory;
     @Operation(summary = "Get a productId by date and brand and product")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Found the productId",
@@ -53,6 +54,10 @@ public class PricesController {
 
     private ResponseEntity<PricesDto> pricesPvpFallback(LocalDateTime applicationDate, Long product, Long brand, Throwable error) {
         String message = String.format("Fallback method called for applicationDate: %s, product: %s, brand: %s", applicationDate, product, brand);
+
+        if (error instanceof NotFoundException) {
+            throw new NotFoundException("Price not found for request");
+        }
         log.error(message.concat("-").concat(error.getMessage()), error);
         return ResponseEntity.ok().body(buildPricesDto());
     }
