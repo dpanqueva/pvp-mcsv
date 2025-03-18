@@ -1,6 +1,9 @@
 # Etapa 1: Construir el archivo JAR con Maven
 FROM eclipse-temurin:21-jdk AS builder
 
+# Instalar Maven
+RUN apt-get update && apt-get install -y maven
+
 WORKDIR /app
 
 # Copiar el código fuente y construir el JAR
