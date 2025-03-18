@@ -20,7 +20,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: 'maven'
-          
+
       - name: Install xmllint
         run: sudo apt-get update && sudo apt-get install -y libxml2-utils
 
@@ -28,26 +28,32 @@ jobs:
         #run: mvn --batch-mode test org.jacoco:jacoco-maven-plugin:prepare-agent verify
         run: mvn clean test jacoco:report
 
-      - name: Extract Coverage
+      - name: Verify Jacoco Report Exists
         run: |
-          COVERED=$(xmllint --xpath 'string(//counter[@type="LINE" and @covered="true"]/@value)' target/site/jacoco/jacoco.xml)
-          MISSED=$(xmllint --xpath 'string(//counter[@type="LINE" and @missed="true"]/@value)' target/site/jacoco/jacoco.xml)
-          
-          if [[ -z "$COVERED" || -z "$MISSED" ]]; then
-          echo "Error: No se pudieron obtener valores de cobertura"
-          exit 1
+          if [ ! -f target/site/jacoco/jacoco.xml ]; then
+            echo "Error: jacoco.xml no encontrado. Asegúrate de que las pruebas se ejecuten correctamente."
+            exit 1
           fi
-          
+
+      - name: Extract Coverage Percentage
+        run: |
+          COVERED=$(xmllint --xpath "string(//report/counter[@type='LINE']/@covered)" target/site/jacoco/jacoco.xml)
+          MISSED=$(xmllint --xpath "string(//report/counter[@type='LINE']/@missed)" target/site/jacoco/jacoco.xml)
+
+          if [[ -z "$COVERED" || -z "$MISSED" ]]; then
+            echo "Error: No se pudieron obtener valores de cobertura"
+            exit 1
+          fi
+
           TOTAL=$((COVERED + MISSED))
           if [[ "$TOTAL" -eq 0 ]]; then
-          echo "Error: Total de líneas cubiertas y perdidas es 0"
-          exit 1
+            echo "Error: Total de líneas cubiertas y perdidas es 0"
+            exit 1
           fi
-          
+
           PERCENTAGE=$((COVERED * 100 / TOTAL))
-          
-          echo "echo COVERAGE_PERCENTAGE=$PERCENTAGE >> $GITHUB_ENV" >> $GITHUB_STEP_SUMMARY
-          echo "Coverage: $PERCENTAGE%"
+          echo "COVERAGE_PERCENTAGE=$PERCENTAGE" >> $GITHUB_ENV
+          echo "📊 **Cobertura de código:** $PERCENTAGE%"
           
 
       - name: Post Coverage Comment
