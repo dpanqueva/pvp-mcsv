@@ -126,14 +126,14 @@ jobs:
           git tag -a "v${{ env.VERSION }}" -m "Release ${{ env.VERSION }}"
           
            # Configurar el repositorio
-          git remote add origin https://github.com/${{ secrets.GB_USERNAME }}/${{ github.repository }}
+           # git remote add origin https://github.com/${{ secrets.GB_USERNAME }}/${{ github.repository }}
     
           # Configurar la URL de remoto con el token de acceso personal (PAT)
           git remote set-url origin https://x-access-token:${{ secrets.GB_TOKEN }}@github.com/${{ secrets.GB_USERNAME }}/${{ github.repository }}
 
           # Hacer el push de la etiqueta
           git push origin "v${{ env.VERSION }}"
-          
+
       - name: Update POM Version
         run: |
           set -e
