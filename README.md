@@ -23,10 +23,7 @@ Microservicio para la gestión de precios de venta de productos de la marca Indi
 ## Requisitos Previos
 
 * Java 21
-* Maven 3.9.9 
-* H2
-* Junit
-* Mockito
+* Maven 3.9.9
 
 ## Instalación
 
@@ -79,4 +76,11 @@ La documentación completa de la API está disponible en:
 
 ### Versión 0.1.0
 
-* Swagger, OpenAPI 3.1, Test Unit >80%
+* Swagger
+* OpenAPI 3.1
+* Test Unit >80%
+* H2
+* Junit
+* Mockito
+* MapStruct
+* JPA
