@@ -22,28 +22,34 @@ jobs:
           cache: 'maven'
 
       - name: Run Unit Tests with Coverage
-        run: mvn --batch-mode test org.jacoco:jacoco-maven-plugin:prepare-agent verify
+        #run: mvn --batch-mode test org.jacoco:jacoco-maven-plugin:prepare-agent verify
+        run: mvn clean test jacoco:report
 
       - name: Extract Coverage
         run: |
-          COVERED=$(grep -oP 'LINE.*?covered="\K\d+' target/site/jacoco/jacoco.xml | tr -d '\n')
-          MISSED=$(grep -oP 'LINE.*?missed="\K\d+' target/site/jacoco/jacoco.xml | tr -d '\n')
-          
-          if [[ -z "$COVERED" || -z "$MISSED" ]]; then
-            echo "Error: No se pudieron obtener valores de cobertura"
-            exit 1
-          fi
-          
-          TOTAL=$((COVERED + MISSED))
-          if [[ "$TOTAL" -eq 0 ]]; then
-            echo "Error: Total de líneas cubiertas y perdidas es 0"
-            exit 1
-          fi
-          
-          PERCENTAGE=$((COVERED * 100 / TOTAL))
-          
-          echo "COVERAGE_PERCENTAGE=$PERCENTAGE" >> $GITHUB_ENV
-          echo "Coverage: $PERCENTAGE%"
+            COVERAGE=$(grep -oP '(?<=<counter type="INSTRUCTION" missed=")[0-9]+' target/site/jacoco/jacoco.xml)
+            TOTAL=$(grep -oP '(?<=<counter type="INSTRUCTION" covered=")[0-9]+' target/site/jacoco/jacoco.xml)
+            PERCENTAGE=$(echo "scale=2; $TOTAL / ($TOTAL + $COVERAGE) * 100" | bc)
+            echo "Cobertura total: $PERCENTAGE%"
+#        run: |
+#          COVERED=$(grep -oP 'LINE.*?covered="\K\d+' target/site/jacoco/jacoco.xml | tr -d '\n')
+#          MISSED=$(grep -oP 'LINE.*?missed="\K\d+' target/site/jacoco/jacoco.xml | tr -d '\n')
+#
+#          if [[ -z "$COVERED" || -z "$MISSED" ]]; then
+#            echo "Error: No se pudieron obtener valores de cobertura"
+#            exit 1
+#          fi
+#
+#          TOTAL=$((COVERED + MISSED))
+#          if [[ "$TOTAL" -eq 0 ]]; then
+#            echo "Error: Total de líneas cubiertas y perdidas es 0"
+#            exit 1
+#          fi
+#
+#          PERCENTAGE=$((COVERED * 100 / TOTAL))
+#
+#          echo "COVERAGE_PERCENTAGE=$PERCENTAGE" >> $GITHUB_ENV
+#          echo "Coverage: $PERCENTAGE%"
           
 
       - name: Post Coverage Comment

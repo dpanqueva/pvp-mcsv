@@ -8,8 +8,5 @@ import org.mapstruct.Mapper;
 public interface PriceMapper extends GenericMapper< PricesDto,Price> {
 
     @Override
-    Price toEntity(PricesDto dto);
-
-    @Override
     PricesDto toDto(Price entity);
 }
