@@ -1,18 +1,26 @@
-# Usa una imagen base de OpenJDK
-FROM eclipse-temurin:21-jdk
+# Etapa 1: Construir el archivo JAR con Maven
+FROM eclipse-temurin:21-jdk AS builder
 
-# Configurar el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar el archivo JAR generado por Maven al contenedor
-COPY ./target/*.jar app.jar
+# Copiar el código fuente y construir el JAR
+COPY . /app
+RUN mvn clean package -DskipTests
+
+# Etapa 2: Ejecutar la aplicación
+FROM eclipse-temurin:21-jdk
+
+WORKDIR /app
+
+# Copiar el archivo JAR desde la etapa anterior
+COPY --from=builder /app/target/*.jar app.jar
 
 # Definir las variables de entorno para la base de datos
 ENV DB_USERNAME=${DB_USERNAME}
 ENV DB_PASSWORD=${DB_PASSWORD}
 
-# Expone el puerto en el que corre la aplicación Spring Boot
+# Exponer el puerto
 EXPOSE 8080
 
-# Ejecuta la aplicación
+# Ejecutar la aplicación
 ENTRYPOINT ["java", "-jar", "app.jar"]

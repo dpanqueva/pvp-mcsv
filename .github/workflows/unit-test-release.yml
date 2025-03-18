@@ -91,6 +91,7 @@ jobs:
         run: |
           set -e
           mvn clean package -DskipTests
+          # Verificar que el archivo JAR se haya generado en ./target/
           ls -al ./target
 
       - name: Extract Version
