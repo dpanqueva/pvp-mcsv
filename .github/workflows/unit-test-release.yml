@@ -124,7 +124,9 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "v${{ env.VERSION }}" -m "Release ${{ env.VERSION }}"
-          git push origin "v${{ env.VERSION }}"
+          
+          # Usa el token de acceso personal (PAT) para hacer el push
+          git push https://x-access-token:${{ secrets.GB_TOKEN }}@github.com/{{ secrets.GB_USERNAME }}/${{ github.repository }} "v${{ env.VERSION }}"
 
       - name: Update POM Version
         run: |
